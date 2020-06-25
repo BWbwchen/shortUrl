@@ -2,18 +2,17 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
 const { nanoid } = require('nanoid')
-
-const app = express()
-
-const port = 3000
 const pgp = require('pg-promise')()
 
-const db = pgp(connection)
 
+const app = express()
+const port = 3000
+
+require('dotenv').config();
+const db = pgp(process.env.DB_URL)
 
 app.use(express.static('public'));
 
-//app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser())
 app.use(bodyParser.json());
 
@@ -27,7 +26,7 @@ app.get('/:id', (req, res) => {
         if (data.length == 0) {
             res.sendFile(path.join(__dirname, 'public/index.html'))
         } else {
-            res.redirect(data[0].to_url)
+            res.redirect(data[0]["to_url"])
         }
     })
 })
@@ -39,9 +38,7 @@ app.get('/', (req, res) => {
 
 
 app.post('/api', (req, res) => {
-
     let customName = req.body.short_name
-    
 
     if (customName == "") {
         customName = nanoid(5) 
@@ -68,7 +65,6 @@ app.post('/api', (req, res) => {
 })
 
 function insertShortUrl (customName, url, res) {
-    console.log("insert")
     db.any(
         `INSERT INTO url (sub, to_url) VALUES ($<short_name>, $<url>)`, 
         {
