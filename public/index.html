@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="scripts.js"></script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+        <div id="new_short">
+            <form @submit.prevent="createUrl">
+                <input v-model="originalUrl" placeholder="your url">
+                <input v-model="userShort" placeholder="your prefer short nage">
+                <button type="submit">Create short url now !</button>
+            </form>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="app.js"></script>
+
+    </body>
+</html>
