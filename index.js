@@ -1,13 +1,21 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const path = require('path')
+const { nanoid } = require('nanoid')
+
 const app = express()
+
 const port = 3000
 const pgp = require('pg-promise')()
-const db = pgp(connect)
+
+const db = pgp(connection)
 
 
 app.use(express.static('public'));
 
+//app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser())
+app.use(bodyParser.json());
 
 app.get('/:id', (req, res) => {
     db.any(
@@ -32,26 +40,48 @@ app.get('/', (req, res) => {
 
 app.post('/api', (req, res) => {
 
-    console.log("i receive")
+    let customName = req.body.short_name
+    
+
+    if (customName == "") {
+        customName = nanoid(5) 
+    }
+
+    // check duplicate 
     db.any(
-        'SELECT * FROM url'
+        'SELECT * FROM url WHERE sub = $<wantInsert>',
+        {
+            wantInsert: customName
+        }
     ).then((data) => {
         if (data.length == 0) {
-            res = ""
+            // can insert
+            insertShortUrl(customName, req.body.url, res)
         } else {
-            res.json(data)
+            // do again
+            res.json({
+                checkCode: 100, // do again
+                short_name: nanoid(5)
+            })
         }
     })
-    /*
-    return db.any(
-        'INSERT INTO url (sub, to_url) VALUES ($<short_name>, $<url>)', 
-        {
-            short_name: ,
-            url: 
-        })
-        */
 })
 
+function insertShortUrl (customName, url, res) {
+    console.log("insert")
+    db.any(
+        `INSERT INTO url (sub, to_url) VALUES ($<short_name>, $<url>)`, 
+        {
+            short_name: customName,
+            url: url
+        }
+    ).then(() => {
+        res.json({
+            checkCode: 200,
+            short_name : customName,
+        })
+    })
+}
 
 
 app.listen(port, () => {
